@@ -1,0 +1,37 @@
+{
+  "name": "RescriptElixir",
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "package-specs": [
+    {
+      "module": "es6",
+      "in-source": true
+    }
+  ],
+  "suffix": ".bs.js",
+  "reason": {
+    "react-jsx": 3
+  },
+  "bs-dependencies": [
+    "@urql/rescript",
+    "wonka",
+    "@reasonml-community/graphql-ppx",
+    "@rescript/react"
+  ],
+  "ppx-flags": ["@reasonml-community/graphql-ppx/ppx"],
+  "gentypeconfig": {
+    "language": "typescript",
+    "shims": {
+      "ReasonReact": "ReactEvent"
+    },
+    "generatedFileExtension": ".gen.tsx",
+    "module": "es6"
+  },
+  "graphql": {
+    "schema": "./graphql_schema.json"
+  }
+}

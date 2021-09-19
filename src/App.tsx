@@ -4,34 +4,32 @@ import { authExchange } from "@urql/exchange-auth";
 import { makeOperation, dedupExchange, fetchExchange } from "@urql/core";
 import { cacheExchange } from "@urql/exchange-graphcache";
 import { withAuthenticator, AmplifySignOut } from "@aws-amplify/ui-react";
-import { useQuery, createClient, Provider } from "urql";
-
-const TodosQuery = `
-  query {
-    me {
-      id
-      display_name
-    }
-  }
-`;
-
-// Pull this shit from ENV
-const developerCookie = {
-  secure: false,
-  domain: "localhost",
-  path: "/",
-  expires: 365,
-};
+import { createClient, Provider } from "urql";
+import { Env, isCookie } from "./Environment";
+import { Main } from "./Main.gen";
 
 Auth.configure({
-  region: process.env.REACT_APP_AWS_REGION,
-  userPoolWebClientId: process.env.REACT_APP_USER_POOL_CLIENT,
-  userPoolId: process.env.REACT_APP_USER_POOL_ID,
+  region: Env.REACT_APP_AWS_REGION,
+  userPoolWebClientId: Env.REACT_APP_USER_POOL_CLIENT,
+  userPoolId: Env.REACT_APP_USER_POOL_ID,
   authenticationFlowType: "USER_SRP_AUTH",
-  cookieStorage: developerCookie,
+  ...(isCookie
+    ? {
+        cookieStorage: {
+          secure: Env.REACT_APP_COOKIE_SEC,
+          path: Env.REACT_APP_COOKIE_PATH,
+          expires: Env.REACT_APP_COOKIE_EXPIRES,
+          domain: Env.REACT_APP_COOKIE_DOMAIN,
+        },
+      }
+    : null),
 });
 
-const AuthContext = React.createContext(null);
+type authcontext = {
+  user: null | unknown;
+  Auth: typeof Auth;
+};
+const AuthContext = React.createContext<null | authcontext>(null);
 
 function useAuth() {
   const ctx = React.useContext(AuthContext);
@@ -41,11 +39,11 @@ function useAuth() {
   return ctx;
 }
 
-function AuthProvider({ children }) {
+function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState(null);
 
   React.useEffect(() => {
-    function listener(data) {
+    function listener(data: { payload: { event: string } }) {
       switch (data.payload.event) {
         case "signIn":
         case "tokenRefresh":
@@ -72,26 +70,13 @@ function AuthProvider({ children }) {
   ) : null;
 }
 
-function App() {
-  const [result] = useQuery({
-    query: TodosQuery,
-  });
-
-  const { data, fetching, error } = result;
-
-  if (fetching) return <p>Loading...</p>;
-  if (error) return <p>Oh no... {error.message}</p>;
-
-  return <span>{data.me.display_name}</span>;
-}
-
-function GraphQLProvider({ children }) {
+function GraphQLProvider({ children }: { children: React.ReactNode }) {
   const { Auth } = useAuth();
 
   const client = React.useMemo(
     () =>
       createClient({
-        url: process.env.REACT_APP_ENDPOINT,
+        url: Env.REACT_APP_ENDPOINT,
         exchanges: [
           dedupExchange,
           cacheExchange({}),
@@ -100,7 +85,7 @@ function GraphQLProvider({ children }) {
               if (!authState) {
                 return operation;
               }
-              const token = authState.getIdToken().jwtToken;
+              const token = authState.getIdToken().getJwtToken();
               return makeOperation(operation.kind, operation, {
                 ...operation.context,
                 fetchOptions: {
@@ -137,7 +122,7 @@ function GraphQLProvider({ children }) {
 export default withAuthenticator(() => (
   <AuthProvider>
     <GraphQLProvider>
-      <App />
+      <Main />
       <AmplifySignOut />
     </GraphQLProvider>
   </AuthProvider>

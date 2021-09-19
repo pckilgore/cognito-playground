@@ -4,24 +4,48 @@
   "private": true,
   "dependencies": {
     "@aws-amplify/ui-react": "^1.2.13",
+    "@craco/craco": "^6.3.0",
+    "@reasonml-community/graphql-ppx": "^1.2.2",
+    "@rescript/react": "^0.10.3",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.9.3",
+    "@types/react": "^17.0.21",
+    "@types/react-dom": "^17.0.9",
     "@urql/exchange-auth": "^0.1.6",
     "@urql/exchange-graphcache": "^4.3.3",
+    "@urql/rescript": "^4.0.0",
+    "autoprefixer": "^9",
     "aws-amplify": "^4.2.7",
+    "concurrently": "^6.2.1",
+    "gentype": "^4.2.0",
+    "get-graphql-schema": "^2.1.2",
     "graphql": "^15.5.2",
+    "postcss": "^7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "rescript": "^9.1.4",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat",
+    "typescript": "^4.4.3",
     "urql": "^2.0.4",
     "web-vitals": "^1.0.1"
   },
+  "resolutions": {
+    "wonka": "5.0.0-rc.1"
+  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "yarn js:start",
+    "build": "yarn re:build && yarn js:build",
+    "js:start": "craco start",
+    "js:build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "re:start": "rescript build -w",
+    "re:build": "rescript",
+    "gen:api": "yarn get-graphql-schema http://localhost:4000/graphql -j > graphql_schema.json"
   },
   "eslintConfig": {
     "extends": [
