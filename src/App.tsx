@@ -67,7 +67,12 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export default withAuthenticator(() => (
   <AuthProvider>
-    <div>App Goes here</div>
+    <App />
     <AmplifySignOut />
   </AuthProvider>
 ));
+
+function App() {
+  const auth = useAuth();
+  return <pre>{JSON.stringify(auth, null, 2)}</pre>;
+}
